@@ -1,23 +1,26 @@
-type RGB = { r: number; g: number; b: number };
-type RGBA = RGB & { a: number };
-type OPTIONAL_ALPHA_RGBA = RGB & { a?: number };
+export type RGB = { r: number; g: number; b: number };
+export type RGBA = RGB & { a: number };
+export type ColorInput = string | (RGB & { a?: number });
 
 class Polirae {
 	private readonly rgba: RGBA;
 
-	constructor(input: string | OPTIONAL_ALPHA_RGBA) {
+	constructor(input: ColorInput) {
 		this.rgba = this.parse(input);
 	}
 
-	private parse(input: string | OPTIONAL_ALPHA_RGBA): RGBA {
+	private parse(input: ColorInput): RGBA {
 		if (typeof input === "string") {
 			return this.parseString(input);
 		}
 
+		const clamp = (v: number, max = 255) =>
+			Math.max(0, Math.min(max, Math.floor(v)));
+
 		return {
-			r: Math.max(0, Math.min(255, Math.round(input.r))),
-			g: Math.max(0, Math.min(255, Math.round(input.g))),
-			b: Math.max(0, Math.min(255, Math.round(input.b))),
+			r: clamp(input.r),
+			g: clamp(input.g),
+			b: clamp(input.b),
 			a: typeof input.a === "number" ? Math.max(0, Math.min(1, input.a)) : 1,
 		};
 	}
@@ -29,38 +32,36 @@ class Polirae {
 			throw new Error(`Invalid HEX format: ${str}`);
 		}
 
-		const isShort = hex.length === 3;
-		const step = isShort ? 1 : 2;
+		const fullHex =
+			hex.length === 3
+				? hex
+						.split("")
+						.map((c) => c + c)
+						.join("")
+				: hex;
 
-		const [r, g, b] = [0, 1, 2].map((i) => {
-			const part = hex.substring(i * step, (i + 1) * step);
-			return parseInt(isShort ? part + part : part, 16);
-		});
-
-		if (r === undefined || g === undefined || b === undefined) {
-			throw new Error(`Failed to parse hex components: ${str}`);
-		}
+		const r = parseInt(fullHex.slice(0, 2), 16);
+		const g = parseInt(fullHex.slice(2, 4), 16);
+		const b = parseInt(fullHex.slice(4, 6), 16);
 
 		return { r, g, b, a: 1 };
 	}
 
 	public hex(): string {
-		const res = (
-			(1 << 24) +
-			(this.rgba.r << 16) +
-			(this.rgba.g << 8) +
-			this.rgba.b
-		)
-			.toString(16)
-			.slice(1);
+		const toHex = (v: number) =>
+			Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0");
 
-		return `#${res}`;
+		return `#${toHex(this.rgba.r)}${toHex(this.rgba.g)}${toHex(this.rgba.b)}`;
 	}
 
 	public css(): string {
 		const { r, g, b, a } = this.rgba;
 
 		return a === 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`;
+	}
+
+	public toString(): string {
+		return this.css();
 	}
 
 	public alpha(val: number): Polirae {
@@ -79,5 +80,4 @@ class Polirae {
 	}
 }
 
-export const polirae = (input: string | OPTIONAL_ALPHA_RGBA) =>
-	new Polirae(input);
+export const polirae = (input: ColorInput) => new Polirae(input);

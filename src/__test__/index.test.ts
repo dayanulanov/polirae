@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { polirae } from "./index.js";
+import { polirae } from "../index.js";
 
 describe("Polirae Color Library", () => {
 	describe("Parsing", () => {
@@ -43,7 +43,33 @@ describe("Polirae Color Library", () => {
 		it("should support chaining", () => {
 			const result = polirae("#ffffff").darken(0.5).alpha(0.5).hex();
 
-			expect(result).toBe("#808080");
+			expect(result).toBe("#7f7f7f");
+		});
+	});
+
+	describe("Output Consistency", () => {
+		it("should always return lowercase hex", () => {
+			const color = polirae("#ABC");
+			expect(color.hex()).toBe("#aabbcc");
+		});
+
+		it("should return clean rgb string for alpha === 1", () => {
+			const color = polirae({ r: 255, g: 0, b: 0, a: 1 });
+			expect(color.css()).toBe("rgb(255, 0, 0)");
+		});
+	});
+
+	describe("Mathematical Correctness", () => {
+		it("should maintain color integrity after multiple operations", () => {
+			const color = polirae("#ffffff").darken(0.5).darken(0.5);
+			expect(color.hex()).toBe("#3f3f3f");
+		});
+	});
+
+	describe("DX: Utility methods", () => {
+		it("should allow string conversion in template literals", () => {
+			const color = polirae("#ff0000");
+			expect(`${color}`).toBe("rgb(255, 0, 0)");
 		});
 	});
 
@@ -56,6 +82,10 @@ describe("Polirae Color Library", () => {
 		it("should handle zero alpha correctly", () => {
 			const color = polirae("#000").alpha(0);
 			expect(color.css()).toBe("rgba(0, 0, 0, 0)");
+		});
+
+		it("should not go below black when over-darkened", () => {
+			expect(polirae("#000000").darken(1).hex()).toBe("#000000");
 		});
 	});
 });
