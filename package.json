@@ -1,0 +1,36 @@
+{
+  "name": "polirae",
+  "version": "0.0.1",
+  "private": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "pnpm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dayanulanov/polirae.git"
+  },
+  "keywords": [],
+  "author": "dayanulanov",
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/dayanulanov/polirae/issues"
+  },
+  "homepage": "https://github.com/dayanulanov/polirae#readme",
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "typescript": "^5.9.3"
+  }
+}
